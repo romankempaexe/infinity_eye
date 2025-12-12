@@ -1336,6 +1336,81 @@
             font-weight: 600;
             color: #333;
         }
+
+        /* Capacity Alerts Styling */
+        .overload-events {
+            margin-top: 20px;
+            border-radius: 8px;
+            background: #fff7f8;
+            border: 1px solid #ffb3b3;
+            overflow: hidden;
+        }
+
+        .overload-events-header {
+            background: linear-gradient(135deg, #ff6b6b, #e74c3c);
+            color: white;
+            font-weight: 600;
+            padding: 12px 16px;
+            margin: 0;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+        }
+
+        #overloadEventsList {
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .overload-event {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .overload-event:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        .overload-event:last-child {
+            margin-bottom: 0;
+        }
+
+        .overload-event span {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .overload-event strong {
+            background: linear-gradient(135deg, #ff6b6b, #e74c3c);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.25);
+        }
+
+        .overload-empty {
+            color: #999;
+            font-size: 12px;
+            text-align: center;
+            padding: 20px 16px;
+            font-style: italic;
+        }
     </style>
 </head>
 

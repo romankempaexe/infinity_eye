@@ -1,86 +1,44 @@
 [
   {
-    "address": "Romualda Zaymusa, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
-    "addressRequested": true,
-    "bikes": 19,
+    "address": "53/26, Mariánske námestie, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "bikes": 8,
     "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
-    "capacity": 32,
+    "capacity": 20,
     "center": {
-      "lat": 49.22149424650342,
-      "lng": 18.74057940106016
+      "lat": 49.22330650086631,
+      "lng": 18.74002153065201
     },
-    "created": "12. 12. 2025 20:31:53",
-    "id": 1765567913629,
+    "created": "12. 12. 2025 21:51:32",
+    "id": 1765572692118,
     "name": "Station #1",
-    "pin": "3706",
+    "pin": "3383",
     "points": [
       {
-        "lat": 49.22149424650342,
-        "lng": 18.74057940106016
-      }
-    ]
-  },
-  {
-    "address": "Slovakia, 3231/2A, Antona Bernoláka, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
-    "addressRequested": true,
-    "bikes": 5,
-    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
-    "capacity": 15,
-    "center": {
-      "lat": 49.22026005360642,
-      "lng": 18.739841937704536
-    },
-    "created": "12. 12. 2025 20:34:51",
-    "id": 1765568091451,
-    "name": "Station #2",
-    "pin": "9355",
-    "points": [
-      {
-        "lat": 49.22026005360642,
-        "lng": 18.739841937704536
-      }
-    ]
-  },
-  {
-    "address": "STORE, Antona Bernoláka, Hliny II, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
-    "addressRequested": true,
-    "bikes": 16,
-    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Free_To_Go.mp4",
-    "capacity": 23,
-    "center": {
-      "lat": 49.21977652889471,
-      "lng": 18.741736174319342
-    },
-    "created": "12. 12. 2025 20:35:27",
-    "id": 1765568127485,
-    "name": "Station #3",
-    "pin": "3082",
-    "points": [
-      {
-        "lat": 49.21977652889471,
-        "lng": 18.741736174319342
-      }
-    ]
-  },
-  {
-    "id": 1765568298160,
-    "name": "Station #4",
-    "pin": "7190",
-    "bikes": 7,
-    "capacity": 19,
-    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
-    "points": [
-      {
-        "lat": 49.21909678325676,
-        "lng": 18.74056938059934
+        "lat": 49.22330650086631,
+        "lng": 18.74002153065201
       }
     ],
+    "addressRequested": false
+  },
+  {
+    "address": "2620/52, Komenského, Hliny VIII, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "bikes": 18,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+    "capacity": 30,
     "center": {
-      "lat": 49.21909678325676,
-      "lng": 18.74056938059934
+      "lat": 49.21520032891189,
+      "lng": 18.737380358007858
     },
-    "created": "12. 12. 2025 20:38:18",
-    "addressRequested": true,
-    "address": "2203, Antona Bernoláka, Hliny I, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko"
+    "created": "12. 12. 2025 21:52:33",
+    "id": 1765572753283,
+    "name": "Station #2",
+    "pin": "2728",
+    "points": [
+      {
+        "lat": 49.21520032891189,
+        "lng": 18.737380358007858
+      }
+    ],
+    "addressRequested": true
   }
 ]
