@@ -1,0 +1,149 @@
+[
+  {
+    "address": "Hurbanova, J. M. Hurbana, Staré mesto, Centrum, Žilina, District of Žilina, Region of Žilina, Central Slovakia, 010 01, Slovakia",
+    "addressRequested": true,
+    "bikes": 5,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
+    "capacity": 29,
+    "center": {
+      "lat": 49.225180874802014,
+      "lng": 18.738101273775104
+    },
+    "created": "12. 12. 2025 17:13:50",
+    "id": 1765556030655,
+    "name": "Station #1",
+    "pin": "9610",
+    "points": [
+      {
+        "lat": 49.225180874802014,
+        "lng": 18.738101273775104
+      }
+    ]
+  },
+  {
+    "address": "Cukrovinky MAJA, J. M. Hurbana, Staré mesto, Centrum, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 15,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Free_To_Go.mp4",
+    "capacity": 29,
+    "center": {
+      "lat": 49.225420859601435,
+      "lng": 18.73772978782654
+    },
+    "created": "12. 12. 2025 18:41:03",
+    "id": 1765561263555,
+    "name": "Station #4",
+    "pin": "2667",
+    "points": [
+      {
+        "lat": 49.225420859601435,
+        "lng": 18.73772978782654
+      }
+    ]
+  },
+  {
+    "address": "J. M. Hurbana, Staré mesto, Centrum, Žilina, District of Žilina, Region of Žilina, Central Slovakia, 010 01, Slovakia",
+    "addressRequested": true,
+    "bikes": 17,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
+    "capacity": 27,
+    "center": {
+      "lat": 49.22545326621859,
+      "lng": 18.73829305171967
+    },
+    "created": "12. 12. 2025 18:41:23",
+    "id": 1765561283368,
+    "name": "Station #5",
+    "pin": "5036",
+    "points": [
+      {
+        "lat": 49.22545326621859,
+        "lng": 18.73829305171967
+      }
+    ]
+  },
+  {
+    "address": "Dr. Max, 8610/7B, Námestie Andreja Hlinku, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 13,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+    "capacity": 19,
+    "center": {
+      "lat": 49.225314881056356,
+      "lng": 18.741647154092792
+    },
+    "created": "12. 12. 2025 18:51:59",
+    "id": 1765561919788,
+    "name": "Station #4",
+    "pin": "2508",
+    "points": [
+      {
+        "lat": 49.225314881056356,
+        "lng": 18.741647154092792
+      }
+    ]
+  },
+  {
+    "address": "Dr. Max, 8610/7B, Námestie Andreja Hlinku, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 17,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Free_To_Go.mp4",
+    "capacity": 25,
+    "center": {
+      "lat": 49.225465528176315,
+      "lng": 18.7414862215519
+    },
+    "created": "12. 12. 2025 18:52:02",
+    "id": 1765561922167,
+    "name": "Station #5",
+    "pin": "7590",
+    "points": [
+      {
+        "lat": 49.225465528176315,
+        "lng": 18.7414862215519
+      }
+    ]
+  },
+  {
+    "address": "1049/16, Republiky, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 11,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
+    "capacity": 23,
+    "center": {
+      "lat": 49.223316712664726,
+      "lng": 18.742856496777023
+    },
+    "created": "12. 12. 2025 19:57:41",
+    "id": 1765565861263,
+    "name": "Station #6",
+    "pin": "5920",
+    "points": [
+      {
+        "lat": 49.223316712664726,
+        "lng": 18.742856496777023
+      }
+    ]
+  },
+  {
+    "address": "STERIO Kino, 8610/7B, Námestie Andreja Hlinku, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "bikes": 15,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+    "capacity": 20,
+    "center": {
+      "lat": 49.22506701299315,
+      "lng": 18.739740622334285
+    },
+    "created": "12. 12. 2025 20:39:22",
+    "id": 1765568362588,
+    "name": "Station #7",
+    "pin": "6253",
+    "points": [
+      {
+        "lat": 49.22506701299315,
+        "lng": 18.739740622334285
+      }
+    ],
+    "addressRequested": true
+  }
+]

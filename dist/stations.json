@@ -1,0 +1,86 @@
+[
+  {
+    "address": "Romualda Zaymusa, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 19,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+    "capacity": 32,
+    "center": {
+      "lat": 49.22149424650342,
+      "lng": 18.74057940106016
+    },
+    "created": "12. 12. 2025 20:31:53",
+    "id": 1765567913629,
+    "name": "Station #1",
+    "pin": "3706",
+    "points": [
+      {
+        "lat": 49.22149424650342,
+        "lng": 18.74057940106016
+      }
+    ]
+  },
+  {
+    "address": "Slovakia, 3231/2A, Antona Bernoláka, Staré mesto, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 5,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
+    "capacity": 15,
+    "center": {
+      "lat": 49.22026005360642,
+      "lng": 18.739841937704536
+    },
+    "created": "12. 12. 2025 20:34:51",
+    "id": 1765568091451,
+    "name": "Station #2",
+    "pin": "9355",
+    "points": [
+      {
+        "lat": 49.22026005360642,
+        "lng": 18.739841937704536
+      }
+    ]
+  },
+  {
+    "address": "STORE, Antona Bernoláka, Hliny II, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko",
+    "addressRequested": true,
+    "bikes": 16,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Free_To_Go.mp4",
+    "capacity": 23,
+    "center": {
+      "lat": 49.21977652889471,
+      "lng": 18.741736174319342
+    },
+    "created": "12. 12. 2025 20:35:27",
+    "id": 1765568127485,
+    "name": "Station #3",
+    "pin": "3082",
+    "points": [
+      {
+        "lat": 49.21977652889471,
+        "lng": 18.741736174319342
+      }
+    ]
+  },
+  {
+    "id": 1765568298160,
+    "name": "Station #4",
+    "pin": "7190",
+    "bikes": 7,
+    "capacity": 19,
+    "cameraUrl": "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+    "points": [
+      {
+        "lat": 49.21909678325676,
+        "lng": 18.74056938059934
+      }
+    ],
+    "center": {
+      "lat": 49.21909678325676,
+      "lng": 18.74056938059934
+    },
+    "created": "12. 12. 2025 20:38:18",
+    "addressRequested": true,
+    "address": "2203, Antona Bernoláka, Hliny I, Žilina, okres Žilina, Žilinský kraj, Stredné Slovensko, 010 01, Slovensko"
+  }
+]

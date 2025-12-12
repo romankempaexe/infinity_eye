@@ -1,0 +1,2942 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Eye</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #DB333D;
+            --primary-dark: #b3252c;
+            --primary-soft: rgba(219, 51, 61, 0.12);
+            --primary-contrast: #ffffff;
+            --default-progress-gradient: linear-gradient(90deg,
+                    #27ae60 0%,
+                    #2ecc71 20%,
+                    #f1c40f 50%,
+                    #e67e22 80%,
+                    #c0392b 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.5s ease-in-out;
+            overflow: hidden;
+        }
+
+        .loading-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .loading-splash {
+            width: 240px;
+            max-width: 70vw;
+            animation: floatPulse 2.6s ease-in-out infinite;
+        }
+
+        .loading-exe-logo {
+            position: absolute;
+            right: 30px;
+            bottom: 30px;
+            width: 120px;
+            opacity: 0.9;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        #loading-screen .loading-text {
+            color: var(--primary);
+            font-size: 24px;
+            margin-top: 20px;
+            font-weight: bold;
+            animation: fadeInUp 1s ease-in-out 0.5s both;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatPulse {
+            0% {
+                transform: scale(0.95) translateY(0);
+            }
+
+            50% {
+                transform: scale(1.02) translateY(-8px);
+            }
+
+            100% {
+                transform: scale(0.95) translateY(0);
+            }
+        }
+
+        @keyframes zoomInFade {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        #loading-screen.hidden {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+
+        .add-station-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(219, 51, 61, 0.35);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-station-btn:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(219, 51, 61, 0.45);
+        }
+
+        .add-station-btn.active {
+            background-color: var(--primary);
+        }
+
+        .add-station-btn.active:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .station-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .station-item {
+            font-size: 12px;
+            line-height: 1.35;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+        }
+
+        .station-item strong {
+            font-size: 13px;
+        }
+
+        .station-item small {
+            display: block;
+            color: #555;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .station-item-buttons button {
+            font-size: 11px;
+            padding: 6px 8px;
+        }
+
+        .station-item.occupancy-low {
+            background: #fff5f6;
+            border: 1px solid rgba(219, 51, 61, 0.15);
+        }
+
+        .station-item.occupancy-medium {
+            background: #ffe0e3;
+            border: 1px solid rgba(219, 51, 61, 0.3);
+        }
+
+        .station-item.occupancy-high {
+            background: #ffc5cb;
+            border: 1px solid rgba(219, 51, 61, 0.45);
+        }
+
+        .occupancy-progress {
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: #fdecef;
+            overflow: hidden;
+            margin: 8px 0 4px;
+        }
+
+        .occupancy-progress-fill {
+            height: 100%;
+            transition: width 0.35s ease;
+            border-radius: inherit;
+            background: var(--default-progress-gradient);
+        }
+
+        .station-item .occupancy-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: #fdecef;
+            overflow: hidden;
+            margin: 10px 0 4px;
+        }
+
+        .station-item .occupancy-progress-fill {
+            height: 100%;
+            background: var(--default-progress-gradient);
+        }
+
+
+        .station-item-content {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .station-status {
+            background-color: #f7fbff;
+            border: 1px solid #dde5ff;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .station-status strong {
+            font-size: 14px;
+        }
+
+
+        .station-panel {
+            position: absolute;
+            top: 110px;
+            left: 20px;
+            width: 320px;
+            max-height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+            z-index: 120;
+        }
+
+        .collapsible-panel {
+            position: relative;
+        }
+
+        .station-panel.collapsible-panel {
+            position: absolute;
+        }
+
+        .collapsible-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .collapse-toggle {
+            border: none;
+            background: var(--primary-soft);
+            color: var(--primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, transform 0.2s ease;
+            padding: 0;
+        }
+
+        .collapse-toggle:hover {
+            background: rgba(219, 51, 61, 0.2);
+            transform: scale(1.05);
+        }
+
+        .collapsed-icon {
+            border: none;
+            background: transparent;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--primary);
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+        }
+
+        .collapsible-panel.collapsed {
+            min-height: 64px;
+            width: 64px;
+            padding: 12px;
+            gap: 0;
+        }
+
+        .collapsible-panel.collapsed .panel-header,
+        .collapsible-panel.collapsed .panel-content {
+            display: none;
+        }
+
+        .collapsible-panel.collapsed .collapsed-icon {
+            display: flex;
+        }
+
+        .station-panel.collapsed {
+            max-height: none;
+            border-radius: 50%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-section.collapsible-panel {
+            border: 1px solid #ececf5;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .control-section.collapsible-panel .panel-content input {
+            margin-bottom: 8px;
+        }
+
+        .control-section.collapsible-panel.collapsed {
+            padding: 10px;
+        }
+
+        .station-panel-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #2a2a2a;
+            font-weight: 700;
+        }
+
+        .station-panel .station-status {
+            background: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            border-left: 6px solid var(--primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .station-status.occupancy-low {
+            border-left-color: var(--primary);
+            background: #fff5f6;
+        }
+
+        .station-status.occupancy-medium {
+            border-left-color: var(--primary);
+            background: #ffe0e3;
+        }
+
+        .station-status.occupancy-high {
+            border-left-color: var(--primary-dark);
+            background: #ffc5cb;
+        }
+
+        .station-panel .station-search {
+            margin-bottom: 8px;
+        }
+
+        .station-panel .station-search input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .station-panel .station-search input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(219, 51, 61, 0.15);
+        }
+
+        .station-panel .station-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .station-item.occupancy-low {
+            background: #ecf8ee;
+            border: 1px solid rgba(40, 167, 69, 0.25);
+        }
+
+        .station-item.occupancy-medium {
+            background: #fff8e1;
+            border: 1px solid rgba(255, 193, 7, 0.35);
+        }
+
+        .station-item.occupancy-high {
+            background: #fdecea;
+            border: 1px solid rgba(220, 53, 69, 0.35);
+        }
+
+        .occupancy-progress {
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: #fdecef;
+            overflow: hidden;
+            margin: 8px 0 4px;
+        }
+
+        .occupancy-progress-fill {
+            height: 100%;
+            transition: width 0.35s ease;
+            border-radius: inherit;
+            background: var(--default-progress-gradient);
+        }
+
+        .station-item .occupancy-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: #fdecef;
+            overflow: hidden;
+            margin: 10px 0 4px;
+        }
+
+        .station-item .occupancy-progress-fill {
+            height: 100%;
+            transition: width 0.35s ease;
+            border-radius: inherit;
+            background: var(--default-progress-gradient);
+        }
+
+        .occupancy-progress-text {
+            font-size: 11px;
+            color: #4a4a4a;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .occupancy-free {
+            font-size: 11px;
+            color: #222;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .marker-popup {
+            min-width: 180px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .marker-popup-address {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .marker-popup-label {
+            display: block;
+            margin-top: 4px;
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+
+        .marker-popup-free {
+            font-size: 11px;
+            color: #2f2f2f;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        .popup-utilization-btn {
+            margin-top: 8px;
+            width: 100%;
+            border: none;
+            background: var(--primary);
+            color: var(--primary-contrast);
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .popup-utilization-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .camera-tooltip {
+            position: absolute;
+            pointer-events: none;
+            z-index: 500;
+            width: 260px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+        }
+
+        .camera-tooltip.visible {
+            display: block;
+        }
+
+        .camera-tooltip video {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .camera-tooltip .camera-tooltip-label {
+            position: absolute;
+            bottom: 8px;
+            left: 10px;
+            font-size: 10px;
+            color: #fff;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 4px;
+        }
+
+        .drawing-mode-indicator {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            z-index: 100;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .point-count {
+            margin-top: 5px;
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .cancel-polygon-btn {
+            width: 100%;
+            margin-top: 5px;
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .cancel-polygon-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .bike-marker {
+            position: relative;
+            width: 56px;
+            height: 78px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 2px;
+            cursor: pointer;
+            transform-origin: 50% 80%;
+            filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+            transition: transform 0.22s ease, filter 0.22s ease;
+            --marker-gradient: linear-gradient(135deg, #ffb3c1, var(--primary));
+            --marker-glow: rgba(219, 51, 61, 0.4);
+        }
+
+        .bike-marker.occupancy-low {
+            --marker-gradient: linear-gradient(135deg, #9fe6b8, #2f9e44);
+            --marker-glow: rgba(47, 158, 68, 0.45);
+        }
+
+        .bike-marker.occupancy-medium {
+            --marker-gradient: linear-gradient(135deg, #ffe29a, #f08c00);
+            --marker-glow: rgba(240, 140, 0, 0.45);
+        }
+
+        .bike-marker.occupancy-high {
+            --marker-gradient: linear-gradient(135deg, #ff9fa8, #c02030);
+            --marker-glow: rgba(192, 32, 48, 0.45);
+        }
+
+        .bike-marker.active {
+            transform: translateY(-4px) scale(1.08);
+            filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+        }
+
+        .bike-marker__pin {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            border-radius: 18px 18px 16px 16px;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            background: var(--marker-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 16px rgba(0, 0, 0, 0.35), 0 0 18px var(--marker-glow);
+            overflow: hidden;
+        }
+
+        .bike-marker__pin::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.55);
+            filter: blur(1px);
+            opacity: 0.75;
+            pointer-events: none;
+        }
+
+        .bike-marker__sparkle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 65%);
+            opacity: 0.4;
+            animation: markerSparkle 3.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .bike-marker__icon {
+            position: relative;
+            font-size: 22px;
+            line-height: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+            z-index: 1;
+        }
+
+        .bike-marker__tail {
+            width: 18px;
+            height: 20px;
+            margin-top: -4px;
+            background: var(--marker-gradient);
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .bike-marker__shadow {
+            width: 34px;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @keyframes markerSparkle {
+
+            0%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.25;
+            }
+
+            50% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+        }
+
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+
+
+        .controls-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls-container.collapsed {
+            width: 64px;
+            height: 64px;
+            padding: 12px;
+            border-radius: 50%;
+            gap: 0;
+        }
+
+        .controls-container.collapsed .panel-header,
+        .controls-container.collapsed .panel-content {
+            display: none;
+        }
+
+        .controls-container.collapsed .collapsed-icon {
+            display: flex;
+        }
+
+        .control-section {
+            margin-bottom: 15px;
+        }
+
+        .controls-container .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls-container .panel-header .panel-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .controls-container .collapsed-icon {
+            align-self: center;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-section label {
+            display: block;
+            font-weight: bold;
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        select,
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            background-color: white;
+        }
+
+        select:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(219, 51, 61, 0.25);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-contrast);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(219, 51, 61, 0.35);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background-color: #fff7f8;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+            font-size: 12px;
+            color: #666;
+        }
+
+        .leaflet-popup-content {
+            font-size: 12px !important;
+        }
+
+        #coordinatesDisplay {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--primary);
+            color: var(--primary-contrast);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .layer-control {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .layer-btn {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .layer-btn.active {
+            background-color: var(--primary);
+            color: var(--primary-contrast);
+        }
+
+        #searchInput {
+            width: 100%;
+        }
+
+        .search-button {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 95%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: rgba(219, 51, 61, 0.08);
+            border: 2px solid var(--primary);
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            background: var(--primary);
+            color: var(--primary-contrast);
+            transform: scale(1.05);
+            outline: none;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .control-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Calendar Styles */
+        .calendar-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+
+        .calendar-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+            width: 250px;
+            flex: 0 0 auto;
+        }
+
+        .monthly-summary {
+            border: 1px solid #f4c6cb;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff7f8;
+            min-width: 230px;
+            flex: 1 1 230px;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .monthly-summary-header {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .monthly-summary-header span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .monthly-summary-header small {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .monthly-summary-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 240px;
+        }
+
+        .monthly-summary-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            padding: 4px 0;
+        }
+
+        .monthly-summary-item.overload .monthly-summary-meter-fill {
+            background: linear-gradient(135deg, #ff9fa8, #c02030);
+        }
+
+        .monthly-summary-item.overload span:last-child {
+            color: #c10225;
+        }
+
+        .monthly-summary-item .day-label {
+            width: 28px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .monthly-summary-item .monthly-summary-value {
+            font-weight: 600;
+            color: #333;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        .monthly-summary-pill {
+            background: #c10225;
+            color: #fff;
+            padding: 1px 6px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .monthly-summary-meter {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            background: #fdecef;
+            overflow: hidden;
+        }
+
+        .monthly-summary-meter-fill {
+            height: 100%;
+            background: var(--default-progress-gradient);
+        }
+
+        .monthly-summary-item.disabled {
+            color: #bbb;
+        }
+
+        .monthly-summary-item.disabled span:last-child {
+            color: #bbb;
+        }
+
+        .monthly-summary-empty {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .calendar-nav {
+            background: var(--primary);
+            color: var(--primary-contrast);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .calendar-nav:hover {
+            background: var(--primary-dark);
+        }
+
+        .calendar-nav.disabled,
+        .calendar-nav:disabled {
+            background: #f4c6cb;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        #currentMonthYear {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            font-size: 12px;
+            padding: 5px;
+        }
+
+        .calendar-days {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .calendar-day:hover {
+            background-color: #fff1f2;
+        }
+
+        .calendar-day.selected {
+            background-color: var(--primary);
+            color: var(--primary-contrast);
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+        }
+
+        .calendar-day.today {
+            background-color: #ffe3e6;
+            font-weight: 600;
+        }
+
+        .calendar-day.disabled {
+            color: #bbb;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .calendar-day.capacity-alert {
+            position: relative;
+            box-shadow: inset 0 0 0 1px rgba(255, 0, 37, 0.3);
+        }
+
+        .calendar-day.capacity-alert::after {
+            content: '!';
+            position: absolute;
+            top: 3px;
+            right: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #db333d;
+        }
+
+        function updateMonthlySummary() {
+            const summaryList=document.getElementById('monthlyUtilizationList');
+            const summaryLabel=document.getElementById('monthlySummaryLabel');
+            const newAlerts=new Set();
+
+            if ( !summaryList || !summaryLabel) {
+                return;
+            }
+
+            if ( !currentUtilizationStation || !currentCalendarDate) {
+                summaryLabel.textContent='--';
+                summaryList.innerHTML='<p class="monthly-summary-empty">Select a station to view daily utilization.</p>';
+                capacityAlertDates=newAlerts;
+                return;
+            }
+
+            const year=currentCalendarDate.getFullYear();
+            const month=currentCalendarDate.getMonth();
+
+            summaryLabel.textContent=new Date(year, month).toLocaleDateString('en-US', {
+                month: 'long', year: 'numeric'
+            });
+
+        const daysInMonth=new Date(year, month + 1, 0).getDate();
+        const today=new Date(todayNormalized);
+        const minDate=new Date(minSelectableDate);
+
+        const entries=[];
+
+        for (let day=1; day <=daysInMonth; day++) {
+            const dayDate=new Date(year, month, day);
+            dayDate.setHours(0, 0, 0, 0);
+            const isFuture=dayDate.getTime()>today.getTime();
+            const isBeforeMin=dayDate.getTime() < minDate.getTime();
+
+            if (isFuture || isBeforeMin) {
+                entries.push(` <div class="monthly-summary-item disabled" > <span class="day-label" >$ {
+                        day
+                    }
+
+                    .</span> <div class="monthly-summary-meter" ></div> <span class="monthly-summary-value" >--</span> </div> `);
+                continue;
+            }
+
+            const dailyData=generateMockUtilizationDataForDate(dayDate);
+            const value=Math.round(dailyData.average);
+            const capacityExceeded=dailyData.capacityAlerts.length>0;
+
+            if (capacityExceeded) {
+                const isoKey=dayDate.toISOString().split('T')[0];
+                newAlerts.add(isoKey);
+            }
+
+            entries.push(` <div class="monthly-summary-item${capacityExceeded ? ' overload' : ''}" > <span class="day-label" >$ {
+                    day
+                }
+
+                .</span> <div class="monthly-summary-meter" > <div class="monthly-summary-meter-fill" style="width: ${value}%" ></div> </div> <span class="monthly-summary-value" >$ {
+                    value
+                }
+
+                %</span> $ {
+                    capacityExceeded ? '<span class="monthly-summary-pill">⚠️</span>' : ''
+                }
+
+                </div> `);
+        }
+
+        summaryList.innerHTML=entries.join('') || '<p class="monthly-summary-empty">No utilization data for this month.</p>';
+        capacityAlertDates=newAlerts;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-screen">
+        <div class="loading-brand">
+            <img src="splash.png" alt="Infinity Eye Logo" class="loading-splash">
+            <div class="loading-text">Loading Infinity Eye...</div>
+        </div>
+        <img src="exe.png" alt="EXE logo" class="loading-exe-logo" aria-hidden="true">
+    </div>
+
+    <div class="station-panel collapsible-panel" id="stationPanel">
+        <div class="panel-header">
+            <div class="station-panel-title">Stations & status</div>
+            <button class="collapse-toggle" type="button" aria-label="Toggle station list" aria-expanded="true"
+                onclick="toggleCollapsible('stationPanel')">-</button>
+        </div>
+
+        <div class="panel-content">
+            <div class="station-search">
+                <input type="text" id="stationSearchInput" placeholder="Search by address...">
+            </div>
+            <div class="station-list" id="stationList">
+                <p style="color: #999; font-size: 11px;">No stations yet</p>
+            </div>
+        </div>
+
+        <button class="collapsed-icon" type="button" onclick="toggleCollapsible('stationPanel')"
+            title="Show stations panel" aria-label="Show stations panel">🚲</button>
+    </div>
+
+    <div id="map"></div>
+
+    <button class="add-station-btn" id="addStationBtn" title="Add bike station">+</button>
+
+    <div id="drawingIndicator" class="drawing-mode-indicator" style="display: none;">
+        <div>🎯 Station placement mode</div>
+        <div class="point-count">Click once on the map to place a station.</div>
+        <button class="cancel-polygon-btn" onclick="cancelPolygon()">✕ Cancel</button>
+    </div>
+
+    <div class="controls-container collapsible-panel" id="controlsPanel">
+        <div class="panel-header">
+            <span class="panel-title">Map Controls</span>
+            <button class="collapse-toggle" type="button" aria-label="Toggle map controls" aria-expanded="true"
+                onclick="toggleCollapsible('controlsPanel')">-</button>
+        </div>
+        <div class="panel-content">
+            <div class="control-section collapsible-panel" id="searchPanel">
+                <div class="panel-header">
+                    <label for="searchInput">Search location:</label>
+                    <button class="collapse-toggle" type="button" aria-label="Toggle search panel" aria-expanded="true"
+                        onclick="toggleCollapsible('searchPanel')">-</button>
+                </div>
+                <div class="panel-content">
+                    <input type="text" id="searchInput" placeholder="e.g. Bratislava">
+                    <button class="btn-primary search-button" onclick="searchLocation()">Search</button>
+                </div>
+                <button class="collapsed-icon" type="button" onclick="toggleCollapsible('searchPanel')"
+                    title="Show search panel" aria-label="Show search panel">🔍</button>
+            </div>
+
+            <div class="control-section">
+                <label>Maps:</label>
+                <div class="layer-control">
+                    <button class="layer-btn active" data-type="base" data-layer="osm"
+                        onclick="switchBaseLayer('osm')">OpenStreetMap</button>
+                    <button class="layer-btn" data-type="base" data-layer="satellite"
+                        onclick="switchBaseLayer('satellite')">Satellite</button>
+                    <button class="layer-btn" id="heatLayerToggle" onclick="toggleHeatLayer()">Heat map</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <label>Tools:</label>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="zoomToHome()">Home</button>
+                    <button class="btn-secondary" onclick="zoomToLocation()">My Location</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <label>Station data:</label>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="exportStationsToFile()">Save to file</button>
+                    <button class="btn-secondary" onclick="document.getElementById('stationFileInput').click()">Load
+                        from
+                        file</button>
+                </div>
+            </div>
+
+            <div class="control-section info-box" id="coordinatesDisplay">
+                Location: --
+            </div>
+        </div>
+        <button class="collapsed-icon" type="button" onclick="toggleCollapsible('controlsPanel')"
+            title="Show map controls" aria-label="Show map controls">🗺️</button>
+    </div>
+
+    <input type="file" id="stationFileInput" accept="application/json,.json" style="display: none;">
+
+    <script>
+        // Zoom limits and layers
+        const defaultMaxZoom = 22;
+        const satelliteMaxZoom = 18;
+
+        // Initialize map centered on Žilina
+        const map = L.map('map', {maxZoom: defaultMaxZoom, attributionControl: false}).setView([49.223, 18.7394], 13);
+        map.zoomControl.setPosition('topright');
+
+        // OpenStreetMap layer
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 22
+        }).addTo(map);
+
+        // Satellite layer
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri',
+            maxZoom: satelliteMaxZoom
+        });
+
+        let currentLayer = 'osm';
+        let userMarker = null;
+        let isDrawingMode = false;
+        let stations = [];
+        let stationMarkers = [];
+        let focusedStationId = null;
+        const stationFileInput = document.getElementById('stationFileInput');
+
+        const cameraFeeds = [
+            'https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4',
+            'https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4',
+            'https://storage.googleapis.com/coverr-main/mp4/Free_To_Go.mp4'
+        ];
+
+        const occupancyClasses = ['occupancy-low', 'occupancy-medium', 'occupancy-high'];
+        const NOMINATIM_ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
+
+        function toggleCollapsible(panelId) {
+            const panel = document.getElementById(panelId);
+            if (!panel) {
+                return;
+            }
+            const isCollapsed = panel.classList.toggle('collapsed');
+            const toggleButton = panel.querySelector('.collapse-toggle');
+            if (toggleButton) {
+                toggleButton.setAttribute('aria-expanded', (!isCollapsed).toString());
+            }
+        }
+        const NOMINATIM_PARAMS = 'format=jsonv2&accept-language=sk&email=infinity.eye@app.local';
+        let heatLayer = null;
+        let heatLayerVisible = false;
+        const heatLayerOptions = {
+            radius: 35,
+            blur: 25,
+            maxZoom: 18,
+            minOpacity: 0.3,
+            gradient: {
+                0.2: '#2ecc71',
+                0.4: '#f1c40f',
+                0.6: '#e67e22',
+                0.8: '#e74c3c',
+                1.0: '#c0392b'
+            }
+        };
+
+        const todayNormalized = new Date();
+        todayNormalized.setHours(0, 0, 0, 0);
+        const minSelectableDate = new Date(todayNormalized);
+        minSelectableDate.setFullYear(minSelectableDate.getFullYear() - 1);
+        const minCalendarMonthStart = new Date(minSelectableDate.getFullYear(), minSelectableDate.getMonth(), 1);
+        const maxCalendarMonthStart = new Date(todayNormalized.getFullYear(), todayNormalized.getMonth(), 1);
+        const reverseGeocodeQueue = [];
+        let isProcessingReverseGeocode = false;
+
+        if (stationFileInput) {
+            stationFileInput.addEventListener('change', handleStationFileSelection);
+        }
+
+        // Initialization - load stations from the local JSON file (fallbacks to server)
+        loadStationsFromFile();
+
+        // Update coordinates while moving across the map
+        map.on('mousemove', (e) => {
+            const lat = e.latlng.lat.toFixed(4);
+            const lng = e.latlng.lng.toFixed(4);
+            document.getElementById('coordinatesDisplay').innerHTML =
+                `📍 Location: ${lat}° N, ${lng}° E`;
+        });
+
+        // Map click handler for drawing mode
+        map.on('click', (e) => {
+            if (isDrawingMode) {
+                addPointToPolygon(e.latlng);
+            }
+        });
+
+        // Add station button toggle
+        document.getElementById('addStationBtn').addEventListener('click', () => {
+            toggleDrawingMode();
+        });
+
+        // Base layer switch handler
+        function switchBaseLayer(layer) {
+            const baseButtons = document.querySelectorAll('.layer-btn[data-type="base"]');
+            baseButtons.forEach(btn => btn.classList.remove('active'));
+
+            if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
+            if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+
+            if (layer === 'satellite') {
+                map.addLayer(satelliteLayer);
+                const satBtn = document.querySelector('.layer-btn[data-layer="satellite"]');
+                if (satBtn) {
+                    satBtn.classList.add('active');
+                }
+                adjustMaxZoom(satelliteMaxZoom);
+            } else {
+                map.addLayer(osmLayer);
+                const osmBtn = document.querySelector('.layer-btn[data-layer="osm"]');
+                if (osmBtn) {
+                    osmBtn.classList.add('active');
+                }
+                adjustMaxZoom(defaultMaxZoom);
+            }
+
+            currentLayer = layer;
+        }
+
+        function toggleHeatLayer() {
+            heatLayerVisible = !heatLayerVisible;
+            const heatButton = document.getElementById('heatLayerToggle');
+            if (heatButton) {
+                heatButton.classList.toggle('active', heatLayerVisible);
+            }
+            refreshHeatLayer();
+            updateStationMarkerVisibility();
+        }
+
+        function refreshHeatLayer() {
+            if (typeof L === 'undefined' || typeof L.heatLayer === 'undefined') {
+                return;
+            }
+
+            const heatData = stations
+                .filter(station => station && station.center)
+                .map(station => {
+                    const ratio = getOccupancyRatio(station);
+                    return [station.center.lat, station.center.lng, Math.max(0.05, ratio)];
+                });
+
+            if (!heatLayer) {
+                heatLayer = L.heatLayer(heatData, heatLayerOptions);
+            } else {
+                heatLayer.setLatLngs(heatData);
+            }
+
+            if (heatLayerVisible) {
+                heatLayer.addTo(map);
+            } else if (heatLayer && map.hasLayer(heatLayer)) {
+                map.removeLayer(heatLayer);
+            }
+        }
+
+        function updateStationMarkerVisibility() {
+            stationMarkers.forEach(marker => {
+                if (!marker) {
+                    return;
+                }
+                const element = marker.getElement();
+                if (!element) {
+                    return;
+                }
+                element.style.display = heatLayerVisible ? 'none' : '';
+            });
+        }
+
+        function adjustMaxZoom(maxZoom) {
+            map.setMaxZoom(maxZoom);
+            if (map.getZoom() > maxZoom) {
+                map.setZoom(maxZoom);
+            }
+        }
+
+        // Search location handler
+        function searchLocation() {
+            const searchInput = document.getElementById('searchInput').value;
+            if (!searchInput) {
+                alert('Please enter a search location!');
+                return;
+            }
+
+            // Use the Nominatim API for searching
+            fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchInput)}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        alert('Location not found!');
+                        return;
+                    }
+
+                    const result = data[0];
+                    const lat = parseFloat(result.lat);
+                    const lng = parseFloat(result.lon);
+
+                    // Move map to the found location
+                    map.setView([lat, lng], 13);
+
+                    // Add a marker
+                    L.marker([lat, lng])
+                        .bindPopup(`<b>${result.name}</b><br>${result.display_name}`)
+                        .addTo(map)
+                        .openPopup();
+
+                    document.getElementById('searchInput').value = '';
+                })
+                .catch(error => {
+                    console.error('Error during search:', error);
+                    alert('Search failed!');
+                });
+        }
+
+        // Return to home (Žilina)
+        function zoomToHome() {
+            map.setView([49.223, 18.7394], 13);
+        }
+
+        // Zoom to current position
+        function zoomToLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+
+                        map.setView([lat, lng], 15);
+
+                        // Remove the previous marker
+                        if (userMarker) {
+                            map.removeLayer(userMarker);
+                        }
+
+                        // Pridanie nového markera
+                        userMarker = L.marker([lat, lng], {
+                            icon: L.icon({
+                                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            })
+                        })
+                            .bindPopup('Your location')
+                            .addTo(map)
+                            .openPopup();
+                    },
+                    (error) => {
+                        alert('Unable to determine your location. Please check permissions.');
+                        console.error('Error getting location:', error);
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser!');
+            }
+        }
+
+        // Station placement mode toggle
+        function toggleDrawingMode() {
+            isDrawingMode = !isDrawingMode;
+            const btn = document.getElementById('addStationBtn');
+            const indicator = document.getElementById('drawingIndicator');
+
+            if (isDrawingMode) {
+                btn.classList.add('active');
+                indicator.style.display = 'block';
+                map.dragging.disable();
+            } else {
+                resetDrawingMode();
+            }
+        }
+
+        // Handle map click while adding a station
+        function addPointToPolygon(latlng) {
+            if (!isDrawingMode) {
+                return;
+            }
+            createStationAtLocation(latlng).catch(error => console.error('Failed to create station', error));
+        }
+
+        async function createStationAtLocation(latlng) {
+            const pin = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const bikes = Math.floor(Math.random() * 16) + 5;
+            const capacity = bikes + Math.floor(Math.random() * 10) + 5;
+
+            const station = {
+                id: Date.now(),
+                name: `Station #${stations.length + 1}`,
+                pin,
+                bikes,
+                capacity,
+                cameraUrl: cameraFeeds[Math.floor(Math.random() * cameraFeeds.length)],
+                points: [{lat: latlng.lat, lng: latlng.lng}],
+                center: {lat: latlng.lat, lng: latlng.lng},
+                created: new Date().toLocaleString('sk-SK')
+            };
+
+            stations.push(station);
+
+            let fetchedAddress = null;
+            try {
+                fetchedAddress = await fetchStationAddress(latlng.lat, latlng.lng);
+            } catch (error) {
+                console.error('Immediate reverse geocoding failed:', error);
+            }
+            station.address = fetchedAddress || formatCoordinates(station.center);
+            if (!fetchedAddress) {
+                reverseGeocodeStation(station, true);
+            }
+
+            const marker = createStationMarker(station, stations.length - 1);
+            stationMarkers.push(marker);
+            persistStations();
+
+            resetDrawingMode();
+            updateStationList();
+            refreshHeatLayer();
+            updateStationMarkerVisibility();
+
+            focusStationByIndex(stations.length - 1);
+        }
+
+        // Cancel station placement
+        function cancelPolygon() {
+            resetDrawingMode();
+        }
+
+        // Reset drawing mode
+        function resetDrawingMode() {
+            isDrawingMode = false;
+            const btn = document.getElementById('addStationBtn');
+            btn.classList.remove('active');
+            document.getElementById('drawingIndicator').style.display = 'none';
+            map.dragging.enable();
+        }
+
+        function createStationMarker(station, stationIndex = null) {
+            if (!station.center) {
+                return null;
+            }
+
+            const percent = getOccupancyPercent(station);
+            const occupancyLabel = getOccupancyLabel(station);
+            const freeSlots = getFreeSlots(station);
+            const addressLabel = getAddressLabel(station);
+            const indexForPopup = stationIndex ?? stations.findIndex(s => s.id === station.id);
+            const utilizationButton = indexForPopup >= 0
+                ? `<button class="popup-utilization-btn" onclick="showUtilizationGraph(${indexForPopup}); event.stopPropagation();">📊 Utilization</button>`
+                : '';
+            const popupContent = `
+                <div class="marker-popup">
+                    <div class="marker-popup-address">${addressLabel}</div>
+                    <div class="occupancy-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
+                        <div class="occupancy-progress-fill" style="width: ${percent}%"></div>
+                    </div>
+                    <small class="marker-popup-label">${occupancyLabel}</small>
+                    <div class="marker-popup-free">Free slots: ${freeSlots}</div>
+                    ${utilizationButton}
+                </div>
+            `;
+
+            const markerOccupancyClass = getOccupancyClass(station);
+            const markerHtml = `
+                <div class="bike-marker__pin">
+                    <span class="bike-marker__sparkle"></span>
+                    <span class="bike-marker__icon">🚴</span>
+                </div>
+                <div class="bike-marker__tail"></div>
+                <div class="bike-marker__shadow"></div>
+            `;
+
+            const marker = L.marker([station.center.lat, station.center.lng], {
+                icon: L.divIcon({
+                    className: `bike-marker ${markerOccupancyClass}`,
+                    html: markerHtml,
+                    iconSize: [56, 78],
+                    iconAnchor: [28, 72],
+                    popupAnchor: [0, -54]
+                })
+            }).bindPopup(popupContent)
+                .addTo(map);
+
+            marker.on('click', () => focusStation(station.id));
+            return marker;
+        }
+
+        // Load stations from local storage
+        function loadStations() {
+            clearStationLayers();
+
+            stations.forEach((station, index) => {
+                station.bikes = station.bikes || Math.floor(Math.random() * 16) + 5;
+                station.cameraUrl = station.cameraUrl || cameraFeeds[index % cameraFeeds.length];
+                station.pin = station.pin || Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                station.name = station.name || `Station #${index + 1}`;
+                ensureStationCapacity(station);
+
+                if (!station.center || typeof station.center.lat !== 'number' || typeof station.center.lng !== 'number') {
+                    const fallbackPoint = Array.isArray(station.points) && station.points.length > 0 ? station.points[0] : null;
+                    if (fallbackPoint) {
+                        station.center = {lat: fallbackPoint.lat, lng: fallbackPoint.lng};
+                    } else {
+                        stationMarkers.push(null);
+                        return;
+                    }
+                }
+
+                if (!Array.isArray(station.points) || station.points.length === 0) {
+                    station.points = [{lat: station.center.lat, lng: station.center.lng}];
+                }
+
+                const marker = createStationMarker(station, index);
+                stationMarkers.push(marker);
+                if (marker) {
+                    reverseGeocodeStation(station, true);
+                }
+            });
+
+            updateStationList();
+            refreshHeatLayer();
+            updateStationMarkerVisibility();
+
+            if (stations.length > 0) {
+                focusStationByIndex(0);
+            } else {
+                resetStationStatus();
+            }
+        }
+
+        function clearStationLayers() {
+            stationMarkers.forEach(marker => {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+            });
+            stationMarkers = [];
+        }
+
+        function ensureStationCapacity(station) {
+            if (!station || typeof station.bikes !== 'number') {
+                return;
+            }
+
+            if (!station.capacity || station.capacity < station.bikes) {
+                station.capacity = station.bikes + 5;
+            }
+
+            if (station.bikes > station.capacity) {
+                station.bikes = station.capacity;
+            }
+        }
+
+        function getOccupancyRatio(station) {
+            if (!station || !station.capacity) {
+                return 0;
+            }
+            return Math.min(1, station.bikes / station.capacity);
+        }
+
+        function getOccupancyClass(station) {
+            const ratio = getOccupancyRatio(station);
+            if (ratio >= 0.85) {
+                return 'occupancy-high';
+            }
+            if (ratio >= 0.6) {
+                return 'occupancy-medium';
+            }
+            return 'occupancy-low';
+        }
+
+        function getFreeSlots(station) {
+            if (!station) {
+                return 0;
+            }
+            const capacity = Number.isFinite(station.capacity) ? station.capacity : 0;
+            const bikes = Number.isFinite(station.bikes) ? station.bikes : 0;
+            return Math.max(0, capacity - bikes);
+        }
+
+        function applyStatusOccupancy(station) {
+            const statusCard = document.getElementById('stationStatus');
+            if (!statusCard || !station) {
+                return;
+            }
+
+            occupancyClasses.forEach(cls => statusCard.classList.remove(cls));
+            statusCard.classList.add(getOccupancyClass(station));
+        }
+
+        function getOccupancyLabel(station) {
+            const percent = Math.round(getOccupancyRatio(station) * 100);
+            return `${station.bikes}/${station.capacity} bikes (${percent}%)`;
+        }
+
+        function getOccupancyPercent(station) {
+            return Math.round(getOccupancyRatio(station) * 100);
+        }
+
+        // Update station list
+        function updateStationList() {
+            const stationList = document.getElementById('stationList');
+            const searchInput = document.getElementById('stationSearchInput');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+            const filteredStations = stations.filter(station => {
+                const address = getAddressLabel(station).toLowerCase();
+                return address.includes(searchTerm);
+            });
+
+            if (filteredStations.length === 0) {
+                stationList.innerHTML = '<p style="color: #999; font-size: 11px;">No stations found</p>';
+                return;
+            }
+
+            stationList.innerHTML = filteredStations.map((station) => {
+                const originalIndex = stations.indexOf(station);
+                const occupancyClass = getOccupancyClass(station);
+                const percent = getOccupancyPercent(station);
+                const freeSlots = getFreeSlots(station);
+                const coordinateLabel = station.center ? formatCoordinates(station.center) : 'Unknown coordinates';
+                return `
+                    <div class="station-item ${occupancyClass}">
+                        <div class="station-item-content" onclick="focusStationByIndex(${originalIndex})">
+                            <strong>${getAddressLabel(station)}</strong>
+                            <small>${coordinateLabel}</small>
+                            <div class="occupancy-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
+                                <div class="occupancy-progress-fill" style="width: ${percent}%"></div>
+                            </div>
+                            <span class="occupancy-progress-text">${getOccupancyLabel(station)}</span>
+                            <span class="occupancy-free">Free slots: ${freeSlots}</span>
+                        </div>
+                        <div class="station-item-buttons">
+                            <button onclick="event.stopPropagation(); showUtilizationGraph(${originalIndex})">📊 Utilization</button>
+                            <button onclick="event.stopPropagation(); deleteStationById(${station.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteStationById(stationId) {
+            const index = stations.findIndex(station => station.id === stationId);
+            if (index === -1) {
+                console.warn('Station not found for deletion', stationId);
+                return;
+            }
+            deleteStation(index);
+        }
+
+        function focusStation(stationId) {
+            const index = stations.findIndex(station => station.id === stationId);
+            if (index !== -1) {
+                focusStationByIndex(index);
+            }
+        }
+
+        function focusStationByIndex(index) {
+            const station = stations[index];
+            if (!station) {
+                return;
+            }
+
+            focusedStationId = station.id;
+            // Removed station status updates as elements don't exist
+            reverseGeocodeStation(station);
+
+            if (!station.address) {
+                reverseGeocodeStation(station);
+            }
+
+            highlightStation(index);
+
+            if (station.center) {
+                map.setView([station.center.lat, station.center.lng], Math.max(map.getZoom(), 15), {animate: true});
+            }
+        }
+
+        function highlightStation(index) {
+            stationMarkers.forEach((marker, idx) => {
+                if (!marker) {
+                    return;
+                }
+                const element = marker.getElement();
+                if (element) {
+                    element.classList.toggle('active', idx === index);
+                }
+                if (idx === index) {
+                    marker.setZIndexOffset(1000);
+                    marker.openPopup();
+                } else {
+                    marker.setZIndexOffset(0);
+                    marker.closePopup();
+                }
+            });
+        }
+
+        function formatCoordinates(coord) {
+            if (!coord) {
+                return '--';
+            }
+            return `${coord.lat.toFixed(4)}°, ${coord.lng.toFixed(4)}°`;
+        }
+
+        function getAddressLabel(station) {
+            const coordsText = station.center ? formatCoordinates(station.center) : 'Unknown coordinates';
+            if (station && station.address) {
+                return station.address;
+            }
+            if (station && station.center) {
+                return coordsText;
+            }
+            return 'Unknown address';
+        }
+
+        function reverseGeocodeStation(station, force = false) {
+            if (!station || !station.center) {
+                return;
+            }
+
+            const needsAddress = force || !station.address || /°/.test(station.address);
+            if (!needsAddress || station.addressRequested) {
+                return;
+            }
+
+            station.addressRequested = true;
+            reverseGeocodeQueue.push(station);
+            processReverseGeocodeQueue();
+        }
+
+        async function processReverseGeocodeQueue() {
+            if (isProcessingReverseGeocode || reverseGeocodeQueue.length === 0) {
+                return;
+            }
+
+            const station = reverseGeocodeQueue.shift();
+            if (!station || !station.center) {
+                if (station) {
+                    station.addressRequested = false;
+                }
+                processReverseGeocodeQueue();
+                return;
+            }
+
+            isProcessingReverseGeocode = true;
+            try {
+                const fetchedAddress = await fetchStationAddress(station.center.lat, station.center.lng);
+                station.address = fetchedAddress || formatCoordinates(station.center);
+            } catch (error) {
+                console.error('Reverse geocoding failed:', error);
+                station.address = formatCoordinates(station.center);
+            } finally {
+                persistStations();
+                station.addressRequested = false;
+                updateStationList();
+                isProcessingReverseGeocode = false;
+                setTimeout(processReverseGeocodeQueue, 800);
+            }
+        }
+
+        async function fetchStationAddress(lat, lng) {
+            try {
+                const response = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.address) {
+                        return data.address;
+                    }
+                }
+            } catch (error) {
+                console.warn('Local reverse geocode failed', error);
+            }
+
+            const providers = [
+                {
+                    url: `${NOMINATIM_ENDPOINT}?${NOMINATIM_PARAMS}&lat=${lat}&lon=${lng}`,
+                    parse: (data) => data?.display_name
+                },
+                {
+                    url: `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=sk`,
+                    parse: (data) => {
+                        if (!data) {
+                            return null;
+                        }
+                        const parts = [data.city || data.locality, data.principalSubdivision, data.countryName].filter(Boolean);
+                        return parts.length ? parts.join(', ') : null;
+                    }
+                },
+                {
+                    url: `https://geocode.maps.co/reverse?lat=${lat}&lon=${lng}`,
+                    parse: (data) => data?.display_name || buildAddressFromComponents(data?.address)
+                }
+            ];
+
+            for (const provider of providers) {
+                try {
+                    const response = await fetch(provider.url);
+                    if (!response.ok) {
+                        continue;
+                    }
+                    const data = await response.json();
+                    const address = provider.parse(data);
+                    if (address) {
+                        return address;
+                    }
+                } catch (error) {
+                    console.warn('Provider failed', provider.url, error);
+                }
+            }
+
+            return null;
+        }
+
+        function buildAddressFromComponents(components) {
+            if (!components) {
+                return null;
+            }
+            const order = ['road', 'suburb', 'city', 'town', 'state', 'country'];
+            const parts = order
+                .map(key => components[key])
+                .filter(part => typeof part === 'string' && part.trim().length > 0);
+            return parts.length ? parts.join(', ') : null;
+        }
+
+        function resetStationStatus() {
+            focusedStationId = null;
+            // Removed station status updates as elements don't exist
+            stationMarkers.forEach(marker => {
+                if (!marker) {
+                    return;
+                }
+                const element = marker.getElement();
+                if (element) {
+                    element.classList.remove('active');
+                }
+                marker.setZIndexOffset(0);
+                marker.closePopup();
+            });
+        }
+
+        // Delete a station
+        function deleteStation(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= stations.length) {
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this station?')) {
+                return;
+            }
+
+            const marker = stationMarkers[index];
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            stations.splice(index, 1);
+            stationMarkers.splice(index, 1);
+
+            persistStations();
+            updateStationList();
+            refreshHeatLayer();
+            updateStationMarkerVisibility();
+
+            if (stations.length > 0) {
+                const nextIndex = Math.min(index, stations.length - 1);
+                focusStationByIndex(nextIndex);
+            } else {
+                resetStationStatus();
+            }
+        }
+
+        async function persistStations() {
+            try {
+                await fetch('/stations.json', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(stations)
+                });
+            } catch (error) {
+                console.error('Error saving stations to file:', error);
+            }
+        }
+
+        function exportStationsToFile() {
+            if (stations.length === 0) {
+                alert('No stations to save.');
+                return;
+            }
+
+            const payload = JSON.stringify(stations, null, 2);
+            const blob = new Blob([payload], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `stations-${new Date().toISOString().slice(0, 19)}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function handleStationFileSelection(event) {
+            const file = event?.target?.files?.[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                try {
+                    const parsed = JSON.parse(loadEvent.target?.result || '[]');
+                    if (!Array.isArray(parsed)) {
+                        throw new Error('Expected an array of stations.');
+                    }
+
+                    stations = parsed;
+                    stations.forEach(ensureStationCapacity);
+                    persistStations();
+                    loadStations();
+                    alert('Stations loaded from file.');
+                } catch (error) {
+                    console.error('Error loading station file:', error);
+                    alert('Failed to load station file. Check the JSON format.');
+                } finally {
+                    if (stationFileInput) {
+                        stationFileInput.value = '';
+                    }
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function loadStationsFromFile() {
+            try {
+                const response = await fetch('/stations.json');
+                if (!response.ok) {
+                    throw new Error('File request returned ' + response.status);
+                }
+
+                const data = await response.json();
+                stations = Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error('Error loading stations from file:', error);
+                stations = [];
+            } finally {
+                loadStations();
+            }
+        }
+
+        // Handle Enter key for search
+        if (document.getElementById('searchInput')) {
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchLocation();
+                }
+            });
+        }
+
+        // Počiatočné info
+        console.log('Infinity Eye - Application is ready! 🚴');
+
+        // Hide loading screen after map is loaded
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+            }, 1000); // Show logo for at least 1 second
+        });
+
+        // Station search functionality
+        document.getElementById('stationSearchInput').addEventListener('input', updateStationList);
+
+        // Utilization graph functionality
+        let utilizationChart = null;
+        let currentUtilizationStation = null;
+        let currentCalendarDate = new Date();
+        let selectedDate = new Date();
+        let capacityAlertDates = new Set();
+
+        function showUtilizationGraph(stationIndex) {
+            const station = stations[stationIndex];
+            if (!station) return;
+
+            // Store current station for chart updates
+            currentUtilizationStation = station;
+            focusedStationId = station.id;
+
+            const modal = document.getElementById('utilizationModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = `Utilization: ${getAddressLabel(station)}`;
+
+            // Initialize calendar with current date
+            currentCalendarDate = new Date();
+            currentCalendarDate.setDate(1);
+            selectedDate = new Date();
+            selectedDate.setHours(0, 0, 0, 0);
+
+            // Prepare chart type selector with fresh listeners
+            const chartTypeSelect = document.getElementById('chartTypeSelect');
+            const newChartTypeSelect = chartTypeSelect.cloneNode(true);
+            chartTypeSelect.parentNode.replaceChild(newChartTypeSelect, chartTypeSelect);
+            newChartTypeSelect.value = 'line';
+            newChartTypeSelect.addEventListener('change', () => {
+                console.log('Chart type changed to:', newChartTypeSelect.value);
+                if (currentUtilizationStation) {
+                    updateUtilizationChart(currentUtilizationStation, selectedDate);
+                }
+            });
+
+            // Update chart initially with today's data
+            updateUtilizationChart(station, selectedDate);
+
+            // Attach event listeners for calendar navigation (each time modal opens)
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+
+            // Remove old listeners to avoid duplicates
+            const newPrevBtn = prevMonthBtn.cloneNode(true);
+            const newNextBtn = nextMonthBtn.cloneNode(true);
+            prevMonthBtn.parentNode.replaceChild(newPrevBtn, prevMonthBtn);
+            nextMonthBtn.parentNode.replaceChild(newNextBtn, nextMonthBtn);
+
+            newPrevBtn.addEventListener('click', function () {
+                console.log('Prev month clicked');
+                const prevMonth = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() - 1, 1);
+                if (prevMonth < minCalendarMonthStart) {
+                    return;
+                }
+                currentCalendarDate = prevMonth;
+                renderCalendar();
+                if (currentUtilizationStation) {
+                    updateUtilizationChart(currentUtilizationStation, selectedDate);
+                }
+            });
+
+            newNextBtn.addEventListener('click', function () {
+                console.log('Next month clicked');
+                const tentative = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1);
+                if (tentative > maxCalendarMonthStart) {
+                    return;
+                }
+                currentCalendarDate = tentative;
+                renderCalendar();
+                if (currentUtilizationStation) {
+                    updateUtilizationChart(currentUtilizationStation, selectedDate);
+                }
+            });
+
+            renderCalendar();
+            modal.style.display = 'flex';
+        }
+
+        function updateUtilizationChart(station, selectedDate = new Date()) {
+            console.log('updateUtilizationChart called with station:', station, 'date:', selectedDate);
+            const chartType = document.getElementById('chartTypeSelect').value;
+            console.log('Chart type:', chartType);
+            const avgUtilization = document.getElementById('avgUtilization');
+
+            // Generate data for selected date
+            const mockData = generateMockUtilizationDataForDate(selectedDate);
+
+            avgUtilization.textContent = `${mockData.average.toFixed(1)}%`;
+
+            // Create or update chart
+            const ctx = document.getElementById('utilizationChart').getContext('2d');
+
+            // Clear canvas completely
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            if (utilizationChart) {
+                utilizationChart.destroy();
+                utilizationChart = null;
+            }
+
+            const chartConfig = {
+                type: chartType,
+                data: {
+                    labels: mockData.labels,
+                    datasets: [{
+                        label: 'Utilization %',
+                        data: mockData.data,
+                        borderColor: '#DB333D',
+                        backgroundColor: chartType === 'bar' ? '#DB333D' : 'rgba(219, 51, 61, 0.15)',
+                        borderWidth: 2,
+                        fill: chartType === 'line',
+                        tension: chartType === 'line' ? 0.4 : 0
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    width: 600,
+                    height: 150,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function (value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            };
+
+            utilizationChart = new Chart(ctx, chartConfig);
+            renderCapacityAlerts(mockData.capacityAlerts, selectedDate);
+        }
+
+        function renderCapacityAlerts(events, referenceDate) {
+            const list = document.getElementById('overloadEventsList');
+            const header = document.querySelector('#overloadEvents .overload-events-header');
+            if (!list) {
+                return;
+            }
+
+            const dateLabel = referenceDate.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'});
+            if (header) {
+                header.textContent = events && events.length
+                    ? `Capacity alerts · ${dateLabel}`
+                    : 'Capacity alerts';
+            }
+
+            if (!events || events.length === 0) {
+                list.innerHTML = '<p class="overload-empty">No capacity exceedances detected for the chosen date.</p>';
+                return;
+            }
+
+            list.innerHTML = events.map(evt => `
+                <div class="overload-event">
+                    <span>${dateLabel} · ${evt.label}</span>
+                    <strong>${evt.value}%</strong>
+                </div>
+            `).join('');
+        }
+
+        // Heatmap chart option removed; only line and bar remain for clarity.
+
+        // Calendar functionality
+        function renderCalendar() {
+            console.log('Rendering calendar for:', currentCalendarDate);
+            updateMonthlySummary();
+            const calendarDays = document.getElementById('calendarDays');
+            const currentMonthYear = document.getElementById('currentMonthYear');
+
+            if (!calendarDays || !currentMonthYear) {
+                return;
+            }
+
+            const today = new Date(todayNormalized);
+            const minDate = new Date(minSelectableDate);
+            const minMonthStart = new Date(minCalendarMonthStart);
+            const maxMonthStart = new Date(maxCalendarMonthStart);
+
+            if (currentCalendarDate < minMonthStart) {
+                currentCalendarDate = new Date(minMonthStart);
+            }
+            if (currentCalendarDate > maxMonthStart) {
+                currentCalendarDate = new Date(maxMonthStart);
+            }
+
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+
+            if (selectedDate > today) {
+                selectedDate = new Date(today);
+            }
+            if (selectedDate < minDate) {
+                selectedDate = new Date(minDate);
+            }
+
+            const calendarMonthStart = new Date(year, month, 1);
+            const normalizedSelectedDate = new Date(selectedDate);
+            normalizedSelectedDate.setHours(0, 0, 0, 0);
+
+            currentMonthYear.textContent = new Date(year, month).toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
+
+            const nextMonthBtn = document.getElementById('nextMonth');
+            if (nextMonthBtn) {
+                const disableNext = calendarMonthStart.getTime() === maxMonthStart.getTime();
+                nextMonthBtn.disabled = disableNext;
+                nextMonthBtn.classList.toggle('disabled', disableNext);
+            }
+
+            const prevMonthBtn = document.getElementById('prevMonth');
+            if (prevMonthBtn) {
+                const disablePrev = calendarMonthStart.getTime() === minMonthStart.getTime();
+                prevMonthBtn.disabled = disablePrev;
+                prevMonthBtn.classList.toggle('disabled', disablePrev);
+            }
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Start from Monday
+
+            const endDate = new Date(lastDay);
+            endDate.setDate(endDate.getDate() + (7 - lastDay.getDay())); // End on Sunday
+
+            calendarDays.innerHTML = '';
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                const cellDate = new Date(currentDate);
+                const normalizedCellDate = new Date(cellDate);
+                normalizedCellDate.setHours(0, 0, 0, 0);
+                dayElement.textContent = cellDate.getDate();
+
+                // Check if this is the current month
+                if (cellDate.getMonth() !== month) {
+                    dayElement.classList.add('other-month');
+                }
+
+                // Check if this is today
+                if (normalizedCellDate.getTime() === today.getTime()) {
+                    dayElement.classList.add('today');
+                }
+
+                // Check if this is selected
+                if (normalizedCellDate.getTime() === normalizedSelectedDate.getTime()) {
+                    dayElement.classList.add('selected');
+                }
+
+                const isFutureDate = normalizedCellDate.getTime() > today.getTime();
+                const isBeforeMinDate = normalizedCellDate.getTime() < minDate.getTime();
+                if (isFutureDate || isBeforeMinDate) {
+                    dayElement.classList.add('disabled');
+                }
+
+                if (!isFutureDate && !isBeforeMinDate && cellDate.getMonth() === month && cellDate.getFullYear() === year) {
+                    dayElement.addEventListener('click', () => {
+                        selectedDate = new Date(normalizedCellDate);
+                        renderCalendar();
+                        if (currentUtilizationStation) {
+                            updateUtilizationChart(currentUtilizationStation, selectedDate);
+                        }
+                    });
+                }
+
+                const isoDay = normalizedCellDate.toISOString().split('T')[0];
+                if (capacityAlertDates.has(isoDay)) {
+                    dayElement.classList.add('capacity-alert');
+                    dayElement.setAttribute('title', 'Capacity exceeded this day');
+                }
+
+                calendarDays.appendChild(dayElement);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+
+        function updateMonthlySummary() {
+            const summaryList = document.getElementById('monthlyUtilizationList');
+            const summaryLabel = document.getElementById('monthlySummaryLabel');
+
+            if (!summaryList || !summaryLabel) {
+                return;
+            }
+
+            if (!currentUtilizationStation || !currentCalendarDate) {
+                summaryLabel.textContent = '--';
+                summaryList.innerHTML = '<p class="monthly-summary-empty">Select a station to view daily utilization.</p>';
+                return;
+            }
+
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            summaryLabel.textContent = new Date(year, month).toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date(todayNormalized);
+            const minDate = new Date(minSelectableDate);
+
+            capacityAlertDates.clear();
+            const entries = [];
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDate = new Date(year, month, day);
+                dayDate.setHours(0, 0, 0, 0);
+                const isFuture = dayDate.getTime() > today.getTime();
+                const isBeforeMin = dayDate.getTime() < minDate.getTime();
+
+                if (isFuture || isBeforeMin) {
+                    entries.push(`
+                        <div class="monthly-summary-item disabled">
+                            <span class="day-label">${day}.</span>
+                            <div class="monthly-summary-meter"></div>
+                            <span class="monthly-summary-value">--</span>
+                        </div>
+                    `);
+                    continue;
+                }
+
+                const dailyData = generateMockUtilizationDataForDate(dayDate);
+                const value = Math.round(dailyData.average);
+                const capacityExceeded = dailyData.capacityAlerts.length > 0;
+                if (capacityExceeded) {
+                    const isoKey = dayDate.toISOString().split('T')[0];
+                    capacityAlertDates.add(isoKey);
+                }
+
+                entries.push(`
+                        <div class="monthly-summary-item${capacityExceeded ? ' overload' : ''}">
+                            <span class="day-label">${day}.</span>
+                            <div class="monthly-summary-meter">
+                                <div class="monthly-summary-meter-fill" style="width: ${value}%"></div>
+                            </div>
+                            <span class="monthly-summary-value">${value}%</span>
+                            ${capacityExceeded ? '<span class="monthly-summary-pill">⚠️</span>' : ''}
+                        </div>
+                    `);
+            }
+
+            summaryList.innerHTML = entries.join('') || '<p class="monthly-summary-empty">No utilization data for this month.</p>';
+        }
+
+        function generateMockUtilizationDataForDate(selectedDate) {
+            const hours = [];
+            const data = [];
+            let peakHour = '--';
+            let maxUtilization = 0;
+            let totalUtilization = 0;
+            const capacityAlerts = [];
+            const overloadEvents = [];
+            const today = new Date();
+            const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const normalizedSelectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+            const isToday = normalizedSelectedDate.getTime() === normalizedToday.getTime();
+            const maxHour = isToday ? today.getHours() : 23;
+
+            // Use date to seed random generation for consistency
+            const seed = selectedDate.getTime();
+            let randomSeed = seed;
+
+            function seededRandom() {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            }
+
+            // Decide if this particular day should feature any capacity exceedance
+            const dayHasCapacityAlert = seededRandom() > 0.75; // roughly 25% of days
+            let overloadApplied = false;
+
+            for (let i = 0; i <= maxHour; i++) {
+                const hour = i.toString().padStart(2, '0') + ':00';
+                hours.push(hour);
+
+                // Generate realistic utilization pattern with seeded randomness
+                let utilization;
+                if (i >= 7 && i <= 9) { // Morning commute
+                    utilization = 40 + seededRandom() * 70;
+                } else if (i >= 17 && i <= 19) { // Evening commute
+                    utilization = 60 + seededRandom() * 80;
+                } else if (i >= 10 && i <= 16) { // Work hours
+                    utilization = 30 + seededRandom() * 60;
+                } else { // Off hours
+                    utilization = 10 + seededRandom() * 45;
+                }
+
+                if (dayHasCapacityAlert) {
+                    const commuteHour = (i >= 7 && i <= 9) || (i >= 17 && i <= 19);
+                    const shouldSpike = commuteHour && seededRandom() > 0.55;
+                    if (shouldSpike || (!overloadApplied && i === 8)) {
+                        utilization += 35 + seededRandom() * 25;
+                        overloadApplied = true;
+                    }
+                    utilization = Math.min(130, Math.max(0, utilization));
+                } else {
+                    // Keep non-alert days safely below capacity
+                    utilization = Math.min(95, Math.max(0, utilization));
+                }
+                data.push(Math.round(utilization));
+
+                if (utilization > maxUtilization) {
+                    maxUtilization = utilization;
+                    peakHour = hour;
+                }
+
+                if (utilization > 100) {
+                    capacityAlerts.push({label: hour, value: Math.round(utilization)});
+                }
+
+                totalUtilization += utilization;
+            }
+
+            const sampleSize = Math.max(1, data.length);
+            return {
+                labels: hours,
+                data: data,
+                peakHours: peakHour,
+                average: totalUtilization / sampleSize,
+                capacityAlerts
+            };
+        }
+
+        function closeUtilizationModal() {
+            const modal = document.getElementById('utilizationModal');
+            modal.style.display = 'none';
+
+            // Reset current station
+            currentUtilizationStation = null;
+
+            // Properly destroy chart and clear canvas
+            if (utilizationChart) {
+                utilizationChart.destroy();
+                utilizationChart = null;
+            }
+
+            const ctx = document.getElementById('utilizationChart').getContext('2d');
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+        function generateMockUtilizationData(timePeriod = 'today') {
+            let labels = [];
+            let data = [];
+            let peakHour = '';
+            let maxUtilization = 0;
+            let totalUtilization = 0;
+
+            switch (timePeriod) {
+                case 'today':
+                    // 24 hours
+                    for (let i = 0; i < 24; i++) {
+                        const hour = i.toString().padStart(2, '0') + ':00';
+                        labels.push(hour);
+                        const utilization = generateHourlyUtilization(i);
+                        data.push(Math.round(utilization));
+                        if (utilization > maxUtilization) {
+                            maxUtilization = utilization;
+                            peakHour = hour;
+                        }
+                        totalUtilization += utilization;
+                    }
+                    break;
+
+                case 'week':
+                    // 7 days
+                    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    for (let i = 0; i < 7; i++) {
+                        labels.push(days[i]);
+                        const utilization = 30 + Math.random() * 50; // Weekly pattern
+                        data.push(Math.round(utilization));
+                        if (utilization > maxUtilization) {
+                            maxUtilization = utilization;
+                            peakHour = days[i];
+                        }
+                        totalUtilization += utilization;
+                    }
+                    break;
+
+                case 'month':
+                    // 30 days
+                    for (let i = 1; i <= 30; i++) {
+                        labels.push(i.toString());
+                        const utilization = 25 + Math.random() * 60; // Monthly pattern
+                        data.push(Math.round(utilization));
+                        if (utilization > maxUtilization) {
+                            maxUtilization = utilization;
+                            peakHour = i.toString();
+                        }
+                        totalUtilization += utilization;
+                    }
+                    break;
+
+                case 'year':
+                    // 12 months
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    for (let i = 0; i < 12; i++) {
+                        labels.push(months[i]);
+                        const utilization = 20 + Math.random() * 70; // Yearly pattern
+                        data.push(Math.round(utilization));
+                        if (utilization > maxUtilization) {
+                            maxUtilization = utilization;
+                            peakHour = months[i];
+                        }
+                        totalUtilization += utilization;
+                    }
+                    break;
+            }
+
+            return {
+                labels: labels,
+                data: data,
+                peakHours: peakHour,
+                average: totalUtilization / data.length
+            };
+        }
+
+        function generateHourlyUtilization(hour) {
+            // Generate realistic utilization pattern (higher during commute hours)
+            let utilization;
+            if (hour >= 7 && hour <= 9) { // Morning commute
+                utilization = 70 + Math.random() * 25;
+            } else if (hour >= 17 && hour <= 19) { // Evening commute
+                utilization = 75 + Math.random() * 20;
+            } else if (hour >= 10 && hour <= 16) { // Work hours
+                utilization = 40 + Math.random() * 30;
+            } else { // Off hours
+                utilization = 10 + Math.random() * 20;
+            }
+            return Math.min(100, Math.max(0, utilization));
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('utilizationModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeUtilizationModal();
+            }
+        });
+
+        // Calendar navigation - handled dynamically in showUtilizationGraph() to ensure proper event binding
+    </script>
+
+    <!-- Utilization Graph Modal -->
+    <div id="utilizationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Station Utilization</h3>
+                <button class="modal-close" onclick="closeUtilizationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="chart-controls">
+                    <div class="control-group">
+                        <label>Select Date:</label>
+                        <div class="calendar-wrapper">
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <button id="prevMonth" class="calendar-nav">&larr;</button>
+                                    <span id="currentMonthYear"></span>
+                                    <button id="nextMonth" class="calendar-nav">&rarr;</button>
+                                </div>
+                                <div class="calendar-grid">
+                                    <div class="calendar-day-header">Mon</div>
+                                    <div class="calendar-day-header">Tue</div>
+                                    <div class="calendar-day-header">Wed</div>
+                                    <div class="calendar-day-header">Thu</div>
+                                    <div class="calendar-day-header">Fri</div>
+                                    <div class="calendar-day-header">Sat</div>
+                                    <div class="calendar-day-header">Sun</div>
+                                    <div id="calendarDays" class="calendar-days"></div>
+                                </div>
+                            </div>
+                            <div class="monthly-summary">
+                                <div class="monthly-summary-header">
+                                    <span>Monthly utilization</span>
+                                    <small id="monthlySummaryLabel">--</small>
+                                </div>
+                                <div id="monthlyUtilizationList" class="monthly-summary-list">
+                                    <p class="monthly-summary-empty">Select a station to view daily utilization.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Chart Type:</label>
+                        <select id="chartTypeSelect">
+                            <option value="line">Line Chart</option>
+                            <option value="bar">Bar Chart</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="utilizationChart" width="600" height="150"></canvas>
+                <div id="utilizationStats" class="utilization-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Average Utilization:</span>
+                        <span class="stat-value" id="avgUtilization">--</span>
+                    </div>
+                </div>
+                <div id="overloadEvents" class="overload-events">
+                    <div class="overload-events-header">Capacity alerts</div>
+                    <div id="overloadEventsList">
+                        <p class="overload-empty">No capacity exceedances detected for the chosen date.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
