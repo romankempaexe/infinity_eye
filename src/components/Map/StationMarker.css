@@ -1,0 +1,166 @@
+/* Station Marker Styles */
+.custom-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+.bike-marker {
+  position: relative;
+  width: 56px;
+  height: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  cursor: pointer;
+  transform-origin: 50% 80%;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+  transition: transform 0.22s ease, filter 0.22s ease;
+  --marker-gradient: linear-gradient(135deg, #ffb3c1, #DB333D);
+  --marker-glow: rgba(219, 51, 61, 0.4);
+}
+
+.bike-marker.occupancy-low {
+  --marker-gradient: linear-gradient(135deg, #9fe6b8, #2f9e44);
+  --marker-glow: rgba(47, 158, 68, 0.45);
+}
+
+.bike-marker.occupancy-medium {
+  --marker-gradient: linear-gradient(135deg, #ffe29a, #f08c00);
+  --marker-glow: rgba(240, 140, 0, 0.45);
+}
+
+.bike-marker.occupancy-high {
+  --marker-gradient: linear-gradient(135deg, #ff9fa8, #c02030);
+  --marker-glow: rgba(192, 32, 48, 0.45);
+}
+
+.bike-marker.active {
+  transform: translateY(-4px) scale(1.08);
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+}
+
+.bike-marker__pin {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 18px 18px 16px 16px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: var(--marker-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.35), 0 0 18px var(--marker-glow);
+  overflow: hidden;
+}
+
+.bike-marker__pin::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(1px);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.bike-marker__sparkle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 65%);
+  opacity: 0.4;
+  animation: markerSparkle 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.bike-marker__icon {
+  position: relative;
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+  z-index: 1;
+}
+
+.bike-marker__tail {
+  width: 18px;
+  height: 20px;
+  margin-top: -4px;
+  background: var(--marker-gradient);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.bike-marker__shadow {
+  width: 34px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+@keyframes markerSparkle {
+
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.25;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+/* Popup Styles */
+.marker-popup {
+  min-width: 180px;
+  font-size: 12px;
+  color: #333;
+}
+
+.marker-popup-address {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.marker-popup-label {
+  display: block;
+  margin-top: 4px;
+  font-weight: 600;
+  color: #4a4a4a;
+}
+
+.marker-popup-free {
+  font-size: 11px;
+  color: #2f2f2f;
+  font-weight: 600;
+  margin-top: 3px;
+  display: block;
+}
+
+.popup-utilization-btn {
+  margin-top: 8px;
+  width: 100%;
+  border: none;
+  background: #DB333D;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.popup-utilization-btn:hover {
+  background: #b3252c;
+}
