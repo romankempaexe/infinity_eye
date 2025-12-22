@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinity Eye</title>
+    <title>Infinity Deep Vision</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -64,7 +64,34 @@
         .loading-splash {
             width: 240px;
             max-width: 70vw;
-            animation: floatPulse 2.6s ease-in-out infinite;
+            animation: floatPulse 4.2s ease-in-out infinite;
+        }
+
+        .loading-title {
+            font-size: 3.8rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #666, #999, #777);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            letter-spacing: -0.02em;
+            line-height: 0.9;
+            margin: 20px 0 10px 0;
+            text-align: center;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% {
+                filter: drop-shadow(0 0 2px rgba(102, 102, 102, 0.2));
+                transform: scale(1);
+            }
+
+            100% {
+                filter: drop-shadow(0 0 4px rgba(153, 153, 153, 0.3));
+                transform: scale(1.01);
+            }
         }
 
         .loading-exe-logo {
@@ -77,12 +104,13 @@
         }
 
         #loading-screen .loading-text {
-            color: var(--primary);
-            font-size: 24px;
-            margin-top: 20px;
-            font-weight: bold;
-            animation: fadeInUp 1s ease-in-out 0.5s both;
+            color: #888;
+            font-size: 16px;
+            margin-top: 15px;
+            font-weight: 500;
+            animation: fadeInUp 1s ease-in-out 0.8s both;
             display: block;
+            opacity: 0.8;
         }
 
         @keyframes fadeIn {
@@ -1417,8 +1445,9 @@
 <body>
     <div id="loading-screen">
         <div class="loading-brand">
-            <img src="splash.png" alt="Infinity Eye Logo" class="loading-splash">
-            <div class="loading-text">Loading Infinity Eye...</div>
+            <img src="splash.png" alt="Infinity Deep Vision Logo" class="loading-splash">
+            <div class="loading-title">INFINITY DEEP VISION</div>
+            <div class="loading-text">Loading application...</div>
         </div>
         <img src="exe.png" alt="EXE logo" class="loading-exe-logo" aria-hidden="true">
     </div>
@@ -2383,7 +2412,7 @@
         }
 
         // Počiatočné info
-        console.log('Infinity Eye - Application is ready! 🚴');
+        console.log('Infinity Deep Vision - Application is ready! 🚴');
 
         // Hide loading screen after map is loaded
         window.addEventListener('load', () => {
@@ -2395,7 +2424,7 @@
                         loadingScreen.style.display = 'none';
                     }, 500);
                 }
-            }, 1000); // Show logo for at least 1 second
+            }, 2000); // Show logo for at least 2 seconds
         });
 
         // Station search functionality
